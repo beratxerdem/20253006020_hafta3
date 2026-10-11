@@ -96,3 +96,6 @@ def travel() -> None:
             toplam_hamle = sayac()
 
     print(f"Oyunu {toplam_hamle} hamlede bitirdin!")
+
+if __name__ == "__main__":
+    travel()
