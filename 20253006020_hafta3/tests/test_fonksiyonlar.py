@@ -1,6 +1,7 @@
 import pytest
 from uzay_oyunu.oyun import envanter_metni, hedef_menusu
 from uzay_oyunu.kayit import gorev_kaydi
+from uzay_oyunu.oyun import galaksi_kur, harita_yukle
 
 def test_envanter_metni() -> None:
     """envanter metninin dogru calıstıgını test eder""" 
@@ -25,3 +26,13 @@ def test_gorev_kaydi() -> None:
         "sorumlu: Ayşe"
     )
     assert gorev_kaydi("Kara deliğe atla", *adimlar, **ekler) == beklenen
+
+def test_galaksi_kur() -> None:
+    """galaksi_kur fonksiyonunun JSON verisi, varsayılan yakıt ve ValueError durumlarını test eder."""
+    g = harita_yukle()
+    assert (g["konum"], g["yakit"]) == ("dünya", 100)
+
+    assert galaksi_kur(["mars"], {"mars": []}, "mars")["yakit"] == 50
+
+    with pytest.raises(ValueError):
+        galaksi_kur(["mars"], {"mars": []}, "venüs")

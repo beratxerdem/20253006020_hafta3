@@ -1,5 +1,10 @@
+import json
+from pathlib import Path
+from typing import Any
+
+
 def envanter_metni(credits: bool, engines: bool, copilot: bool) -> str:
-    """esya varsa sende ... metnini, yoksa boş metin döndürür"""
+    """Eşya varsa 'Sende: ...' metnini, yoksa boş metin döndürür."""
     esyalar: list[str] = []
     if credits:
         esyalar.append("bol kredi")
@@ -10,53 +15,77 @@ def envanter_metni(credits: bool, engines: bool, copilot: bool) -> str:
 
     if not esyalar:
         return ""
-
     return "Sende: " + ", ".join(esyalar)
 
+
 def hedef_menusu(hedefler: list[str]) -> str:
-    """gezegenleri numarali menü olarak döndürür."""
+    """Gezegen hedeflerini numaralı menü metni olarak döndürür."""
     satirlar = ["Nereye gitmek istersin?"]
     for i, hedef in enumerate(hedefler, start=1):
         satirlar.append(f"[{i}] {hedef}")
     return "\n".join(satirlar)
 
 
+def galaksi_kur(
+    gezegenler: list[str],
+    baglantilar: dict[str, list[str]],
+    baslangic: str,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Galaksi verisini doğrular ve oyun durumu sözlüğünü kurar."""
+    if baslangic not in gezegenler:
+        raise ValueError(f"Başlangıç gezegeni '{baslangic}' listede yok!")
+
+    yakit = kwargs.get("yakit", 50)
+    return {
+        "gezegenler": gezegenler,
+        "baglantilar": baglantilar,
+        "konum": baslangic,
+        "yakit": yakit,
+    }
+
+
+def harita_yukle() -> dict[str, Any]:
+    """galaksi.json dosyasını okur ve galaksi_kur ile sözlük döndürür."""
+    dosya_yolu = Path(__file__).parent / "galaksi.json"
+    with open(dosya_yolu, "r", encoding="utf-8") as f:
+        veri = json.load(f)
+    return galaksi_kur(**veri)
+
+
 def travel() -> None:
-    """oyunun seyahat fonksiyonu"""
-    planet = "dünya"
+    """Uzay oyununun ana seyahat fonksiyonu (Görev 3 hali)."""
+    galaksi = harita_yukle()
+    planet = galaksi["konum"]
     credits = False
     engines = False
     copilot = False
 
     while True:
-        print(f"\nŞuan ki gezegen: {planet}")
+        print(f"\nŞu anki gezegen: {planet}")
         metin = envanter_metni(credits, engines, copilot)
         if metin:
             print(metin)
 
-        if planet == "dünya":
-            destinations = ["centauri", "sirius"]
-        elif planet == "centauri":
+        if planet == "centauri":
             credits = True
-            destinations = ["dünya", "sirius", "orion"]
         elif planet == "sirius":
             engines = True
-            destinations = ["dünya", "centauri", "orion", "kara_delik"]
         elif planet == "orion":
             copilot = True
-            destinations = ["centauri", "sirius"]
         elif planet == "kara_delik":
             if credits and engines and copilot:
-                print("Tebrikler!!! Oyunu Kazandin!!!")
+                print("Tebrikler! Oyunu kazandın!")
             else:
                 print("Donanımın eksik, kara delikte kayboldun!")
             break
-        else:
-            break
+
+        destinations = galaksi["baglantilar"][planet]
         print(hedef_menusu(destinations))
-        secim = input("Seçiminiz (çikmak için 'q'): ")
+
+        secim = input("Seçiminiz (çıkmak için 'q'): ")
         if secim == "q":
             break
         if secim.isdigit() and 1 <= int(secim) <= len(destinations):
             planet = destinations[int(secim) - 1]
-        
+            galaksi["konum"] = planet
