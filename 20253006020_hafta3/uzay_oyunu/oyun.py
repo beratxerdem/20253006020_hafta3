@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any
+from uzay_oyunu.araclar import hamle_sayaci
 
 
 def envanter_metni(credits: bool, engines: bool, copilot: bool) -> str:
@@ -54,12 +55,15 @@ def harita_yukle() -> dict[str, Any]:
 
 
 def travel() -> None:
-    """Uzay oyununun ana seyahat fonksiyonu (Görev 3 hali)."""
+    """Uzay oyununun ana seyahat fonksiyonu (Görev 5 son hali)."""
     galaksi = harita_yukle()
     planet = galaksi["konum"]
     credits = False
     engines = False
     copilot = False
+
+    sayac = hamle_sayaci()
+    toplam_hamle = 0
 
     while True:
         print(f"\nŞu anki gezegen: {planet}")
@@ -89,3 +93,6 @@ def travel() -> None:
         if secim.isdigit() and 1 <= int(secim) <= len(destinations):
             planet = destinations[int(secim) - 1]
             galaksi["konum"] = planet
+            toplam_hamle = sayac()
+
+    print(f"Oyunu {toplam_hamle} hamlede bitirdin!")
